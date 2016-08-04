@@ -1,6 +1,6 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from 'react'
 
-class ViewerHighlight extends Component {
+class ViewerHighlight extends PureComponent {
   render() {
     const { position } = this.props;
 

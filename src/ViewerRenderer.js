@@ -9,6 +9,30 @@ import { throttle } from 'lodash';
 
 import ViewerHighlight from './ViewerHighlight';
 
+const cleanupRects = (rects) => {
+  rects.forEach(A => {
+    rects.forEach(B => {
+      if (A.toRemove || B.toRemove) {
+        return;
+      }
+
+      const sameLine = Math.abs(A.top - B.top) < 5;
+
+      if (!sameLine) {
+        return;
+      }
+
+      const AoverlapsB = A.left <= B.left && (B.left + B.width) < (A.left + A.width)
+
+      if (AoverlapsB || B.width === 0 || B.height === 0) {
+        B.toRemove = true;
+      }
+    });
+  });
+
+  return rects.filter(rect => !rect.toRemove);
+};
+
 class ViewerRenderer extends Component {
   constructor(props) {
     super(props);
@@ -29,12 +53,14 @@ class ViewerRenderer extends Component {
     if (!selection.isCollapsed && selection.type === 'Range') {
       const range = selection.getRangeAt(0);
 
-      // eslint-disable-next-line
-      const rects = Array.from(RangeFix.getClientRects(range));
-
       const { scrollTop } = this.rendererNode;
 
-      inner = rects.map((rect, index) => {
+      const rectsToDraw = cleanupRects(
+        // eslint-disable-next-line
+        Array.from(RangeFix.getClientRects(range))
+      );
+
+      inner = rectsToDraw.map((rect, index) => {
         const { top, left, width, height } = rect;
 
         return (
