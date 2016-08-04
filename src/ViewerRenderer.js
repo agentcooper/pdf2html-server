@@ -22,6 +22,8 @@ class ViewerRenderer extends Component {
   }
 
   selectionChangeHandler(event) {
+    const { isMouseDown, highlight } = this.state;
+
     if (!this.rendererNode) {
       return;
     }
@@ -30,6 +32,8 @@ class ViewerRenderer extends Component {
 
     if (!selection.isCollapsed && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
+
+      const { startContainer, endContainer } = range;
 
       const rectsToDraw = optimizeClientRects(
         // eslint-disable-next-line
@@ -50,7 +54,24 @@ class ViewerRenderer extends Component {
         };
       });
 
-      this.setState({ highlight: { positions } });
+      const newHighlight = {
+        endContainer,
+        startContainer,
+        positions,
+      };
+
+      if (isMouseDown) {
+        // prevent highlight flickering
+        if (
+          highlight &&
+          highlight.startContainer !== highlight.endContainer &&
+          newHighlight.endContainer === highlight.startContainer
+        ) {
+          return;
+        }
+
+        this.setState({ highlight: newHighlight });
+      }
     } else {
       this.setState({ highlight: null });
     }
@@ -65,6 +86,9 @@ class ViewerRenderer extends Component {
       ),
       false
     );
+
+    document.addEventListener('mousedown', () => this.setState({ isMouseDown: true }));
+    document.addEventListener('mouseup', () => this.setState({ isMouseDown: false }));
 
     // Array.from(this.rendererNode.querySelectorAll('.t')).forEach(node => {
     //   node.classList.add('correction');
