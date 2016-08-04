@@ -18,5 +18,17 @@
   },
   "eslintConfig": {
     "extends": "./node_modules/react-scripts/config/eslint.js"
-  }
+  },
+  "description": "Proof of concept: finding alternatives to [PDF.JS](https://mozilla.github.io/pdf.js/).",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcooper/pdf2html-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/agentcooper/pdf2html-server/issues"
+  },
+  "homepage": "https://github.com/agentcooper/pdf2html-server#readme"
 }
