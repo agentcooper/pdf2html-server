@@ -1,5 +1,5 @@
 .correction {
-  padding: 15px 30px;
+  padding: 14px 20px;
 }
 
 .highlights {
@@ -11,11 +11,20 @@
 }
 
 @keyframes flash {
-  0%   { opacity: 0.2; }
-  100% { opacity: 0.8; }
+  0%   { opacity: 0.01; }
+  100% { opacity: 0.3; }
 }
 
 .highlight-part {
+  will-change: left, top, opacity;
+  position: absolute;
+  z-index: 1;
+
+  user-select: none;
+  pointer-events: none;
+
   background-color: green;
-  animation: flash 0.5s infinite;
+
+  animation: flash 0.4s ease-out;
+  animation-fill-mode: forwards;
 }

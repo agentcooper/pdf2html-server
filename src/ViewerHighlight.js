@@ -10,10 +10,6 @@ class ViewerHighlight extends PureComponent {
       <div className="highlight-part" style={
         {
           left, top, width, height,
-          position: 'absolute',
-          zIndex: 1,
-          WebkitUserSelect: 'none',
-          pointerEvents: 'none',
         }
       }></div>
     );

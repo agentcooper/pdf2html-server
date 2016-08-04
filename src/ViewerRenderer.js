@@ -9,29 +9,7 @@ import { throttle } from 'lodash';
 
 import ViewerHighlight from './ViewerHighlight';
 
-const cleanupRects = (rects) => {
-  rects.forEach(A => {
-    rects.forEach(B => {
-      if (A.toRemove || B.toRemove) {
-        return;
-      }
-
-      const sameLine = Math.abs(A.top - B.top) < 5;
-
-      if (!sameLine) {
-        return;
-      }
-
-      const AoverlapsB = A.left <= B.left && (B.left + B.width) < (A.left + A.width)
-
-      if (AoverlapsB || B.width === 0 || B.height === 0) {
-        B.toRemove = true;
-      }
-    });
-  });
-
-  return rects.filter(rect => !rect.toRemove);
-};
+import optimizeClientRects from './lib/optimizeClientRects';
 
 class ViewerRenderer extends Component {
   constructor(props) {
@@ -48,19 +26,26 @@ class ViewerRenderer extends Component {
 
     const selection = getSelection();
 
-    let inner = null;
+    let highlight = null;
 
-    if (!selection.isCollapsed && selection.type === 'Range') {
+    if (
+      !selection.isCollapsed &&
+      selection.rangeCount > 0
+    ) {
       const range = selection.getRangeAt(0);
 
-      const { scrollTop } = this.rendererNode;
-
-      const rectsToDraw = cleanupRects(
+      const rectsToDraw = optimizeClientRects(
         // eslint-disable-next-line
         Array.from(RangeFix.getClientRects(range))
       );
 
-      inner = rectsToDraw.map((rect, index) => {
+      if (rectsToDraw.length === 0) {
+        return;
+      }
+
+      const { scrollTop } = this.rendererNode;
+
+      highlight = rectsToDraw.map((rect, index) => {
         const { top, left, width, height } = rect;
 
         return (
@@ -76,7 +61,7 @@ class ViewerRenderer extends Component {
 
     ReactDOM.render(
       <div className="highlights-container-inner">
-        { inner }
+        { highlight }
       </div>,
       this.highlightsNode
     );
@@ -87,10 +72,14 @@ class ViewerRenderer extends Component {
       'selectionchange',
       throttle(
         this.selectionChangeHandler.bind(this),
-        100
+        50
       ),
       false
     );
+
+    // Array.from(this.rendererNode.querySelectorAll('.t')).forEach(node => {
+    //   node.classList.add('correction');
+    // });
   }
 
   render() {
