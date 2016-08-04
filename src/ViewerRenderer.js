@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 
-import ReactDOM from 'react-dom';
-
 import './external/base.min.css';
 import './external/rangefix';
 
 import { throttle } from 'lodash';
 
 import ViewerHighlight from './ViewerHighlight';
+import ViewerRendererPdf from './ViewerRendererPdf';
 
 import optimizeClientRects from './lib/optimizeClientRects';
 
@@ -15,23 +14,21 @@ class ViewerRenderer extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      highlight: null,
+    };
+
     this.rendererNode = null;
-    this.highlightsNode = null;
   }
 
   selectionChangeHandler(event) {
-    if (!this.rendererNode || !this.highlightsNode) {
+    if (!this.rendererNode) {
       return;
     }
 
     const selection = getSelection();
 
-    let highlight = null;
-
-    if (
-      !selection.isCollapsed &&
-      selection.rangeCount > 0
-    ) {
+    if (!selection.isCollapsed && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
 
       const rectsToDraw = optimizeClientRects(
@@ -45,26 +42,18 @@ class ViewerRenderer extends Component {
 
       const { scrollTop } = this.rendererNode;
 
-      highlight = rectsToDraw.map((rect, index) => {
+      const positions = rectsToDraw.map((rect, index) => {
         const { top, left, width, height } = rect;
 
-        return (
-          <ViewerHighlight
-            key={ index }
-            position={{
-              top: top + scrollTop, left, width, height,
-            }}
-          />
-        );
+        return {
+          top: top + scrollTop, left, width, height,
+        };
       });
-    }
 
-    ReactDOM.render(
-      <div className="highlights-container-inner">
-        { highlight }
-      </div>,
-      this.highlightsNode
-    );
+      this.setState({ highlight: { positions } });
+    } else {
+      this.setState({ highlight: null });
+    }
   }
 
   componentDidMount() {
@@ -85,31 +74,35 @@ class ViewerRenderer extends Component {
   render() {
     const { pdf, height } = this.props;
 
-    const { html, css } = pdf;
+    const { highlight } = this.state;
 
     return (
       <div
         className="renderer"
         style={{
           height,
-          overflowY: 'scroll',
-          border: '1px solid black',
-          willChange: 'transform',
         }}
         ref={ node => { this.rendererNode = node }}
       >
         <div
           className="highlights"
-          ref={ node => { this.highlightsNode = node }}
         >
+          <div className="highlights-container-inner">
+            {
+              highlight ?
+                highlight.positions.map(
+                  (position, index) =>
+                    <ViewerHighlight
+                      key={ index }
+                      position={ position }
+                    />
+                )
+                :
+                null
+            }
+          </div>
         </div>
-        <style
-          dangerouslySetInnerHTML={ { __html: css } }
-        />
-        <div
-          dangerouslySetInnerHTML={ { __html: html } }
-        >
-        </div>
+        <ViewerRendererPdf pdf={ pdf } />
       </div>
     );
   }

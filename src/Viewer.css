@@ -1,3 +1,9 @@
+.renderer {
+  overflow-y: scroll;
+  border: 1px solid black;
+  will-change: transform;
+}
+
 .correction {
   padding: 14px 20px;
 }

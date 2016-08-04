@@ -7,11 +7,13 @@ class ViewerHighlight extends PureComponent {
     const { left, top, width, height } = position;
 
     return (
-      <div className="highlight-part" style={
-        {
+      <div
+        className="highlight-part"
+        style={{
           left, top, width, height,
-        }
-      }></div>
+        }}
+      >
+      </div>
     );
   }
 }
