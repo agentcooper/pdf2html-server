@@ -64,6 +64,18 @@ class ViewerRenderer extends Component {
         // prevent highlight flickering
         if (
           highlight &&
+          endContainer &&
+          startContainer &&
+          (
+            endContainer.nodeType !== Node.TEXT_NODE ||
+            startContainer.nodeType !== Node.TEXT_NODE
+          )
+        ) {
+          return;
+        }
+
+        if (
+          highlight &&
           highlight.startContainer !== highlight.endContainer &&
           newHighlight.endContainer === highlight.startContainer
         ) {
