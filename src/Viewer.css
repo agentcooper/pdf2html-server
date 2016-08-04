@@ -1,0 +1,11 @@
+.correction {
+  padding: 15px 30px;
+}
+
+.highlights {
+  position: relative;
+}
+
+::selection {
+  background: transparent;
+}
