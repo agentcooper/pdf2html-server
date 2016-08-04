@@ -21,11 +21,11 @@ npm install
 
 In different terminal tabs:
 
-`npm start`
+`npm run start-service` (backend)
 
 and
 
-`npm run start-service`
+`npm start` (frontend)
 
 #### Credits
 
