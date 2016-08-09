@@ -8,30 +8,75 @@ const sort = (rects) => rects.sort((A, B) => {
   return top;
 });
 
-const optimizeClientRects = (rects) => {
-  sort(rects);
+const addMargin = (xMargin, yMargin) => rect => {
+  const { top, left, width, height } = rect;
 
-  rects.forEach(A => {
-    rects.forEach(B => {
-      if (A.toRemove || B.toRemove) {
-        return;
-      }
+  return {
+    top: top - yMargin,
+    left: left - xMargin,
+    width: width + yMargin,
+    height: height + xMargin,
+  };
+};
 
-      const sameLine = Math.abs(A.top - B.top) < 5;
+const overlaps = (A, B) => A.left <= B.left && B.left <= (A.left + A.width);
 
-      if (!sameLine) {
-        return;
-      }
+const sameLine = (A, B) => Math.abs(A.top - B.top) < 5 && Math.abs(A.height - B.height) < 5;
 
-      const AoverlapsB = A.left <= B.left && (B.left + B.width) < (A.left + A.width)
+// const equals = (A, B) =>
+//   A.top === B.top &&
+//   A.left === B.left &&
+//   A.width === B.width &&
+//   A.height === B.height;
 
-      if (AoverlapsB || B.width === 0 || B.height === 0) {
-        B.toRemove = true;
-      }
+const inside = (A, B) =>
+  A.top > B.top &&
+  A.left > B.left &&
+  A.top + A.height < B.top + B.height &&
+  A.left + A.width < B.left + B.width;
+
+window.overlaps = overlaps;
+window.sameLine = sameLine;
+
+const optimizeClientRects = (clientRects) => {
+  const rects = sort(
+    clientRects.map(
+      addMargin(2, 3)
+    )
+  );
+
+  const firstPass = rects.filter(rect => {
+    return rects.every(otherRect => {
+      return !inside(rect, otherRect);
     });
   });
 
-  return rects.filter(rect => !rect.toRemove);
+  // let didMove = false;
+  let passCount = 0;
+
+  while (passCount <= 2) {
+    firstPass.forEach(A => {
+      firstPass.forEach(B => {
+        if (A === B || A.toRemove || B.toRemove) {
+          return;
+        }
+
+        if (!sameLine(A, B)) {
+          return;
+        }
+
+        if (overlaps(A, B)) {
+          A.width = Math.max(B.width - A.left + B.left, A.width);
+          A.height = Math.max(A.height, B.height);
+
+          B.toRemove = true;
+        }
+      });
+    });
+    passCount += 1;
+  }
+
+  return firstPass.filter(rect => !rect.toRemove);
 };
 
 export default optimizeClientRects;
