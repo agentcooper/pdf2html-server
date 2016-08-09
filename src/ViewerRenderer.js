@@ -11,17 +11,14 @@ import ViewerRendererPdf from './ViewerRendererPdf';
 import optimizeClientRects from './lib/optimizeClientRects';
 
 class ViewerRenderer extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    highlight: null,
+    isMouseDown: false,
+  };
 
-    this.state = {
-      highlight: null,
-    };
+  rendererNode = null;
 
-    this.rendererNode = null;
-  }
-
-  selectionChangeHandler(event) {
+  selectionChangeHandler = throttle(event => {
     const { isMouseDown, highlight } = this.state;
 
     if (!this.rendererNode) {
@@ -87,24 +84,22 @@ class ViewerRenderer extends Component {
     } else {
       this.setState({ highlight: null });
     }
-  }
+  }, 50);
+
+  mouseUpHandler = () => this.setState({ isMouseDown: false });
+
+  mouseDownHandler = () => this.setState({ isMouseDown: true });
 
   componentDidMount() {
-    document.addEventListener(
-      'selectionchange',
-      throttle(
-        this.selectionChangeHandler.bind(this),
-        50
-      ),
-      false
-    );
+    document.addEventListener('selectionchange', this.selectionChangeHandler, false);
+    document.addEventListener('mousedown', this.mouseDownHandler);
+    document.addEventListener('mouseup', this.mouseUpHandler);
+  }
 
-    document.addEventListener('mousedown', () => this.setState({ isMouseDown: true }));
-    document.addEventListener('mouseup', () => this.setState({ isMouseDown: false }));
-
-    // Array.from(this.rendererNode.querySelectorAll('.t')).forEach(node => {
-    //   node.classList.add('correction');
-    // });
+  componentWillUnmount() {
+    document.removeEventListener('selectionchange', this.selectionChangeHandler);
+    document.removeEventListener('mousedown', this.mouseDownHandler);
+    document.removeEventListener('mouseup', this.mouseUpHandler);
   }
 
   render() {

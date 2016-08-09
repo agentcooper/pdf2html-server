@@ -14,23 +14,18 @@ class Viewer extends Component {
     };
   }
 
-  shouldComponentUpdate() {
-    if (this.state.pdf) {
-      return false;
-    }
-
-    return true;
-  }
-
-  requestPdf({ width }) {
-    const { serviceUrl, src } = this.props;
+  requestPdf({ src, width }) {
+    const { serviceUrl } = this.props;
 
     this.setState({ isLoading: true });
 
+    console.time('fetch');
     fetch(`${serviceUrl}/convert?width=${width}&src=${src}`)
     .then(response => response.json())
     .then(json => {
       const { html, css } = json;
+
+      console.timeEnd('fetch');
 
       this.setState({
         pdf: {
@@ -45,24 +40,32 @@ class Viewer extends Component {
     });
   }
 
-  componentDidMount() {
-    const { width } = this.props;
+  componentWillReceiveProps(props) {
+    const { src, width } = this.props;
 
-    this.requestPdf({ width });
+    if (props && props.src !== src) {
+      this.requestPdf({ width, src: props.src });
+    }
+  }
+
+  componentDidMount() {
+    const { width, src } = this.props;
+
+    this.requestPdf({ width, src });
   }
 
   render() {
     const { pdf, isLoading, error } = this.state;
+
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
 
     if (error) {
       return <div>{ error.toString() }</div>;
     }
 
     if (!pdf) {
-      if (isLoading) {
-        return <div>Loading...</div>;
-      }
-
       return <div>No pdf</div>;
     }
 
