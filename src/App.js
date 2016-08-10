@@ -18,9 +18,13 @@ class App extends Component {
 
       console.log('Fetched documents', documents);
 
+      if (documents.length === 0) {
+        throw new Error('No documents');
+      }
+
       this.setState({
         documents,
-        currentDocument: documents[0]
+        currentDocument: documents[documents.length - 1]
       });
     });
   }
