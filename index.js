@@ -1,5 +1,7 @@
 const http = require('http');
 
+const fs = require('fs');
+
 const pdf2HTMLCSS = require('./pdf2HTMLCSS');
 
 const url = require('url');
@@ -8,7 +10,18 @@ const hostname = '127.0.0.1';
 const port = 3003;
 
 const server = http.createServer((req, res) => {
-  if (req.url.startsWith('/convert')) {
+  if (req.url.startsWith('/list')) {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const documents =
+      fs.readdirSync('pdf').filter(filename => filename.endsWith('.pdf'));
+
+    res.end(
+      JSON.stringify({ documents })
+    );
+  } else if (req.url.startsWith('/convert')) {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Access-Control-Allow-Origin', '*');

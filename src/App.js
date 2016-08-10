@@ -2,34 +2,57 @@ import React, { Component } from 'react';
 
 import Viewer from './Viewer';
 
+const serviceUrl = 'http://localhost:3003';
+
 class App extends Component {
   state = {
-    availableSrc: [
-      'concurrent-frp.pdf',
-    ],
-
-    currentSrc: 'concurrent-frp.pdf',
+    documents: [],
+    currentDocument: '',
   };
 
-  render() {
-    const { currentSrc, availableSrc } = this.state;
+  componentDidMount() {
+    fetch(`${serviceUrl}/list`)
+    .then(response => response.json())
+    .then(json => {
+      const { documents } = json;
 
-    console.log(currentSrc);
+      console.log('Fetched documents', documents);
+
+      this.setState({
+        documents,
+        currentDocument: documents[0]
+      });
+    });
+  }
+
+  render() {
+    const { currentDocument, documents } = this.state;
 
     return (
       <div>
-        <Viewer
-          width={ 900 }
-          height={ 600 }
-          serviceUrl={ 'http://localhost:3003' }
-          src={ currentSrc }
-        />
+        {
+        currentDocument ?
+          <Viewer
+            width={ 900 }
+            height={ 600 }
+            serviceUrl={ serviceUrl }
+            src={ currentDocument }
+          />
+          :
+          null
+        }
         <select
-          value={ currentSrc }
-          onChange={ event => this.setState({ currentSrc: event.target.value }) }
+          value={ currentDocument }
+          onChange={
+            event => this.setState({
+              currentDocument: event.target.value,
+            })
+          }
         >
           {
-            availableSrc.map(src => <option key={ src } value={ src }>{ src }</option>)
+            documents.map(src =>
+              <option key={ src } value={ src }>{ src }</option>
+            )
           }
         </select>
       </div>
