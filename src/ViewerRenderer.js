@@ -10,6 +10,8 @@ import ViewerRendererPdf from './ViewerRendererPdf';
 
 import optimizeClientRects from './lib/optimizeClientRects';
 
+import config from './config';
+
 class ViewerRenderer extends Component {
   state = {
     highlight: null,
@@ -32,10 +34,14 @@ class ViewerRenderer extends Component {
 
       const { startContainer, endContainer } = range;
 
-      const rectsToDraw = optimizeClientRects(
-        // eslint-disable-next-line
-        Array.from(RangeFix.getClientRects(range))
-      );
+      // eslint-disable-next-line
+      const clientRects = Array.from(RangeFix.getClientRects(range));
+
+      const rectsToDraw =
+        config.shouldOptimizeClientRects ?
+          optimizeClientRects(clientRects)
+          :
+          clientRects;
 
       if (rectsToDraw.length === 0) {
         return;
@@ -60,6 +66,7 @@ class ViewerRenderer extends Component {
       if (isMouseDown) {
         // prevent highlight flickering
         if (
+          config.optimizeSelectionFlickering &&
           highlight &&
           endContainer &&
           startContainer &&
@@ -72,6 +79,7 @@ class ViewerRenderer extends Component {
         }
 
         if (
+          config.optimizeSelectionFlickering &&
           highlight &&
           highlight.startContainer !== highlight.endContainer &&
           newHighlight.endContainer === highlight.startContainer
